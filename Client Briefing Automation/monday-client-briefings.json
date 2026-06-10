@@ -1,0 +1,594 @@
+{
+  "name": "Monday Client Briefings v14",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 4
+            }
+          ]
+        }
+      },
+      "id": "a702e577-fa5d-4316-bdea-8e0f7dffd2c7",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -6304,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const CHANNEL = 'C0ADHLAPBPD';\nconst clients = [\n  {\n    name: 'Acumen Billing',\n    industry: 'Dental Billing & RCM',\n    searchQueries: [\n      'DSO acquisition OR dental practice merger OR dental group private equity deal',\n      'dental insurance reimbursement change OR Medicare dental coverage OR Medicaid dental policy',\n      'dental billing technology OR dental RCM automation OR dental AI revenue cycle'\n    ],\n    competitors: 'eAssist, DCS, Dental Butler, Overjet, DentalXChange, Dentrix Ascend, Vyne Dental',\n    personas: 'Dentist-owners, Office Managers, VP Revenue Cycle at DSOs',\n    slackChannel: CHANNEL\n  },\n  {\n    name: 'Veridia Health',\n    industry: 'Medical Device Compliance / RegTech',\n    searchQueries: [\n      'FDA warning letter medical device OR FDA inspection findings OR medical device recall',\n      'QMSR compliance medical device OR ISO 13485 update OR EU MDR enforcement',\n      '510k clearance OR FDA premarket approval OR medical device regulatory technology'\n    ],\n    competitors: 'Greenlight Guru, Qualio, MasterControl, Veeva Vault, Arena Solutions, Dot Compliance, Rimsys',\n    personas: 'VP Quality & Regulatory, Head of Software Engineering, RA Directors',\n    slackChannel: CHANNEL\n  },\n  {\n    name: 'Lucidia Health',\n    industry: 'Digital Mental Health Diagnostics',\n    searchQueries: [\n      'mental health startup funding OR digital psychiatry acquisition OR behavioral health platform deal',\n      'ADHD telehealth regulation OR DEA prescribing rule online OR telemental health policy',\n      'university mental health crisis OR college counseling demand OR student mental health investment'\n    ],\n    competitors: 'Cerebral, Done Health, Talkiatry, Rula, Headway, BetterHelp, Brightside Health',\n    personas: 'Directors Student Health, VP Benefits, Psychiatry Practice Owners',\n    slackChannel: CHANNEL\n  },\n  {\n    name: 'GiveLoop',\n    industry: 'Nonprofit Fundraising / P2P Giving Platform',\n    searchQueries: [\n      'nonprofit fundraising platform acquired OR donor management software funding OR giving tech merger',\n      'peer-to-peer fundraising results OR charity endurance event donations OR marathon fundraising record',\n      'online donation growth trends OR digital giving report OR nonprofit technology adoption'\n    ],\n    competitors: 'Classy, GoFundMe Pro, JustGiving, Blackbaud, RallyUp, Givebutter, Bloomerang',\n    personas: 'Nonprofit Executive Directors, Event Fundraising Managers, Foundation Development Officers',\n    slackChannel: CHANNEL\n  },\n  {\n    name: 'Encore Entertainment Services',\n    industry: 'Entertainment Payroll & Production Software',\n    searchQueries: [\n      'IATSE contract OR SAG-AFTRA agreement OR film crew union wage negotiation',\n      'film production spending OR studio production budget OR streaming content investment slate',\n      'film tax credit OR production incentive state program OR entertainment payroll technology'\n    ],\n    competitors: 'Entertainment Partners, Wrapbook, Cast & Crew, GreenSlate, Media Services, Sargent-Disc',\n    personas: 'Line Producers, Production Accountants, Studio VP Production Finance, UPMs',\n    slackChannel: CHANNEL\n  },\n  {\n    name: 'Sourcely AI',\n    industry: 'AI Product Sourcing / Global Manufacturing',\n    searchQueries: [\n      'US tariff China manufacturing OR trade policy import duty OR supply chain reshoring nearshoring',\n      'AI product sourcing platform OR automated supplier discovery OR manufacturing procurement technology funding',\n      'ecommerce brand sourcing OR DTC supply chain cost OR global factory quality control automation'\n    ],\n    competitors: 'Pietra, Sourcify, Alibaba, Faire, Zignify, Novaeo, Thomas, MFG.com',\n    personas: 'DTC Brand Founders, VP Supply Chain, eCommerce Operations Leads, Head of Procurement, CPOs',\n    slackChannel: CHANNEL\n  }\n];\nreturn clients.map(c => ({ json: c }));"
+      },
+      "id": "5a7bbe5a-8d63-4238-af81-e473be5a40e9",
+      "name": "Client Configs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6080,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// =============================================================================\n// SPLIT QUERIES - v13\n// Splits each client into 3 separate items (one per query)\n// =============================================================================\n\nconst allClients = $input.all();\nconst output = [];\n\nfor (const clientItem of allClients) {\n  const client = clientItem.json;\n  \n  for (let qIdx = 0; qIdx < client.searchQueries.length; qIdx++) {\n    output.push({\n      json: {\n        clientName: client.name,\n        clientIndustry: client.industry,\n        clientCompetitors: client.competitors,\n        clientPersonas: client.personas,\n        clientSlackChannel: client.slackChannel,\n        queryIndex: qIdx,\n        searchQuery: client.searchQueries[qIdx]\n      }\n    });\n  }\n}\n\nconsole.log(`Split ${allClients.length} clients into ${output.length} search queries`);\nreturn output;"
+      },
+      "id": "c6ba6d14-d611-43b5-b4d2-434074dca06a",
+      "name": "Split Queries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5872,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.exa.ai/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "EXA_API_KEY_XXX"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.searchQuery }}\",\n  \"type\": \"auto\",\n  \"category\": \"news\",\n  \"numResults\": 5,\n  \"useAutoprompt\": false,\n  \"startPublishedDate\": \"{{ new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0] }}\",\n  \"contents\": { \"text\": { \"maxCharacters\": 1500 } }\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 2,
+              "batchInterval": 1500
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "c02604d9-012e-4bdb-a5f0-88a056554244",
+      "name": "Exa News Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5648,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// =============================================================================\n// MERGE & DEDUPE - v13 (STRICT DATE FILTERING)\n// Rejects: articles with missing dates OR older than 7 days OR before Jan 2026\n// =============================================================================\n\nconst allItems = $input.all();\nconst splitItems = $('Split Queries').all();\n\nconst clientResults = {};\n\nfor (let i = 0; i < allItems.length; i++) {\n  const exaResponse = allItems[i].json;\n  const queryMeta = splitItems[i].json;\n  const clientName = queryMeta.clientName;\n  \n  if (!clientResults[clientName]) {\n    clientResults[clientName] = {\n      name: clientName,\n      industry: queryMeta.clientIndustry,\n      competitors: queryMeta.clientCompetitors,\n      personas: queryMeta.clientPersonas,\n      slackChannel: queryMeta.clientSlackChannel,\n      articles: [],\n      seenUrls: new Set()\n    };\n  }\n  \n  const results = exaResponse.results || [];\n  \n  for (const article of results) {\n    const url = article.url || '';\n    \n    if (clientResults[clientName].seenUrls.has(url)) {\n      continue;\n    }\n    \n    const pubDate = article.publishedDate ? new Date(article.publishedDate) : null;\n    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);\n    const jan2026 = new Date('2026-01-01');\n    \n    if (!pubDate || isNaN(pubDate.getTime())) {\n      console.log(`REJECTED (no valid date): ${clientName} - ${article.title}`);\n      continue;\n    }\n    \n    if (pubDate < sevenDaysAgo || pubDate < jan2026) {\n      console.log(`REJECTED (too old: ${article.publishedDate}): ${clientName} - ${article.title}`);\n      continue;\n    }\n    \n    clientResults[clientName].seenUrls.add(url);\n    clientResults[clientName].articles.push({\n      title: article.title || 'Untitled',\n      url: url,\n      publishedDate: article.publishedDate.split('T')[0],\n      text: article.text ? article.text.substring(0, 1200).trim() : 'No content available'\n    });\n  }\n}\n\nconst output = [];\n\nfor (const clientName of Object.keys(clientResults)) {\n  const client = clientResults[clientName];\n  delete client.seenUrls;\n  \n  let articlesText = '';\n  if (client.articles.length === 0) {\n    articlesText = 'NO RELEVANT ARTICLES FOUND THIS WEEK. Write a brief note stating no major ' + \n                   client.industry + ' developments were identified in the past 7 days.';\n  } else {\n    articlesText = client.articles.map((a, idx) => {\n      return `--- Article ${idx + 1} ---\\nTitle: ${a.title}\\nDate: ${a.publishedDate}\\nURL: ${a.url}\\nContent: ${a.text}`;\n    }).join('\\n\\n');\n  }\n  \n  output.push({\n    json: {\n      name: client.name,\n      industry: client.industry,\n      competitors: client.competitors,\n      personas: client.personas,\n      slackChannel: client.slackChannel,\n      articlesText: articlesText,\n      articleCount: client.articles.length,\n      articles: client.articles\n    }\n  });\n  \n  console.log(`${client.name}: ${client.articles.length} articles passed date filter`);\n}\n\nreturn output;"
+      },
+      "id": "5a40c006-dc17-4dd7-ad5c-60490f7e12fc",
+      "name": "Merge & Dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5424,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a senior analyst at a B2B intelligence agency. You write dense, factual weekly briefings.\n\nCRITICAL RULES:\n1. ONLY use facts from the provided source articles. NEVER invent statistics, dates, company names, or deal sizes.\n2. Ground claims in specifics (names, numbers, dates) but prioritize readable flow over fact-density. Not every sentence needs a statistic.\n3. If an article date is before January 2026, explicitly note \"reported in [month year]\" — do NOT pretend it's current.\n4. If the articles are irrelevant to the client's business, say so directly. Do not force connections.\n5. Output RAW HTML only. No markdown. No code fences. No ``` anywhere.",
+              "role": "system"
+            },
+            {
+              "content": "=Write a weekly intelligence briefing as RAW HTML for this client.\n\nCLIENT: {{ $json.name }}\nINDUSTRY: {{ $json.industry }}\nBUYER PERSONAS: {{ $json.personas }}\nCOMPETITORS TO WATCH: {{ $json.competitors }}\n\nSOURCE ARTICLES (use ONLY these):\n{{ $json.articlesText }}\n\nOUTPUT THIS EXACT HTML STRUCTURE:\n\n<div class=\"exec-summary\">\n<p><strong>Week in Review:</strong> [Write 1-2 flowing paragraphs as a cohesive executive summary. Open with the most significant development, then contextualize with supporting facts. Connect ideas with transitions—don't list facts sequentially. Remember this is a summary of what follows, so phrase accordingly. If no relevant news exists, write one sentence: \"Limited relevant coverage this week.\"]</p>\n</div>\n\n<h2>Key Developments</h2>\n\n[Write 1-4 developments ONLY if articles are relevant and from the past 7 days. If no relevant 2026 news exists, skip straight to Competitive Intelligence and write nothing here.]\n\n<div class=\"development\">\n<h3>[Headline format: \"Company does X - Month Day, Year\" — ALWAYS end with the article date]</h3>\n<p>[2-4 sentences with specific details from the article. Don't pad.] <a href=\"ACTUAL_URL\">(Source)</a></p>\n</div>\n\n<h2>Competitive Intelligence</h2>\n<p>[2-3 sentences. Only mention competitors if they appear in the articles. If none appear, OMIT this entire section.]</p>\n\n<h2>Buyer Signals</h2>\n<p>[2-3 sentences. Connect article findings to the listed buyer personas. If articles are too thin to draw meaningful connections, OMIT this entire section.]</p>\n\nSTRICT REQUIREMENTS:\n- TARGET: 400-700 words (shorter is fine on light weeks)\n- Source links: <a href=\"URL\">(Source)</a> using ACTUAL URLs from articles\n- If fewer than 2 relevant articles, keep it brief—don't manufacture content\n- BANNED WORDS: synergy, innovative, cutting-edge, capitalize, holistic, game-changer, rapidly evolving, streamline, robust, optimize, landscape, paradigm, significant, noteworthy, excited\n- Raw HTML only — no markdown, no code blocks"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2500,
+          "temperature": 0.2
+        }
+      },
+      "id": "29217e99-7dab-443c-bc02-cab93814557a",
+      "name": "GPT-4o Briefing",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -5248,
+        4624
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "s0fnJd1R7a3csqeJ",
+          "name": "Sai-GPT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// =============================================================================\n// BUILD CLIENT OUTPUT - v13\n// Wraps GPT briefing in page HTML, extracts summary for TL;DR\n// =============================================================================\n\nconst clientData = $('Merge & Dedupe').item.json;\nconst gptRaw = $input.item.json;\n\nlet llmOutput = '';\nif (typeof gptRaw === 'string') {\n  llmOutput = gptRaw;\n} else if (gptRaw.message && gptRaw.message.content) {\n  llmOutput = gptRaw.message.content;\n} else if (gptRaw.text) {\n  llmOutput = gptRaw.text;\n} else if (gptRaw.output) {\n  llmOutput = gptRaw.output;\n} else if (gptRaw.content) {\n  llmOutput = gptRaw.content;\n} else {\n  try {\n    llmOutput = gptRaw.choices[0].message.content;\n  } catch (e) {\n    console.log('Could not extract GPT output:', JSON.stringify(gptRaw).substring(0, 200));\n  }\n}\n\nif (!llmOutput || llmOutput.length < 50) {\n  llmOutput = '<div class=\"exec-summary\"><p><strong>Week in Review:</strong> Briefing generation failed. Please check the GPT node output.</p></div>';\n}\n\nlet briefingHtml = llmOutput\n  .replace(/```html\\s*/gi, '')\n  .replace(/```\\s*/g, '')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  .trim();\n\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('en-US', {\n  weekday: 'long',\n  month: 'long', \n  day: 'numeric',\n  year: 'numeric'\n});\nconst shortDate = now.toISOString().split('T')[0];\n\nconst pageHtml = `<div class=\"client-page\">\n  <div class=\"header\">\n    <div class=\"header-left\">\n      <div class=\"brand\">ASTRIS PARTNERS</div>\n      <div class=\"client-name\">${clientData.name}</div>\n    </div>\n    <div class=\"header-right\">\n      <div class=\"date\">${dateStr}</div>\n      <div class=\"industry-tag\">${clientData.industry}</div>\n    </div>\n  </div>\n  <div class=\"content\">\n    ${briefingHtml}\n  </div>\n  <div class=\"footer\">\n    <span>CONFIDENTIAL — INTERNAL USE ONLY</span>\n    <span>${dateStr.toUpperCase()}</span>\n  </div>\n</div>`;\n\nlet execMatch = briefingHtml.match(/<div class=\"exec-summary\">[\\s\\S]*?<p>([\\s\\S]*?)<\\/p>/);\nlet execText = execMatch ? execMatch[1].replace(/<[^>]+>/g, '').replace(/Week in Review:\\s*/i, '').trim() : '';\n\nconst headlines = [];\nconst h3Regex = /<h3>(.*?)<\\/h3>/g;\nlet match;\nwhile ((match = h3Regex.exec(briefingHtml)) !== null) {\n  headlines.push(match[1].replace(/<[^>]+>/g, '').trim());\n}\n\nreturn {\n  json: {\n    clientName: clientData.name,\n    industry: clientData.industry,\n    slackChannel: clientData.slackChannel,\n    pageHtml: pageHtml,\n    execText: execText,\n    headlines: headlines.slice(0, 5).join(' | '),\n    articleCount: clientData.articleCount,\n    dateStr: dateStr,\n    shortDate: shortDate\n  }\n};"
+      },
+      "id": "e1dd2f23-f64d-46c8-84b2-8e2904cb4a86",
+      "name": "Build Client Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4944,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// =============================================================================\n// COMBINE ALL PAGES - v13\n// Creates cover page, combines all client pages, builds full HTML with CSS\n// =============================================================================\n\nconst allBuild = $('Build Client Output').all();\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('en-US', {\n  weekday: 'long',\n  month: 'long',\n  day: 'numeric', \n  year: 'numeric'\n});\nconst shortDate = now.toISOString().split('T')[0];\n\nconst clientList = allBuild.map(it => it.json.clientName);\nlet coverClients = '';\nfor (let i = 0; i < clientList.length; i++) {\n  coverClients += `<div class=\"cover-client\">\n    <span class=\"cover-num\">${String(i + 1).padStart(2, '0')}</span>\n    ${clientList[i]}\n  </div>`;\n}\n\nconst coverHtml = `<div class=\"cover-page\">\n  <div class=\"cover-top\">\n    <div class=\"cover-brand\">ASTRIS PARTNERS</div>\n  </div>\n  <div class=\"cover-center\">\n    <div class=\"cover-accent\"></div>\n    <div class=\"cover-title\">Weekly</div>\n    <div class=\"cover-title\">Intelligence</div>\n    <div class=\"cover-subtitle\">Report</div>\n    <div class=\"cover-accent\"></div>\n    <div class=\"cover-date\">${dateStr}</div>\n  </div>\n  <div class=\"cover-bottom\">\n    <div class=\"cover-label\">CLIENT BRIEFINGS</div>\n    ${coverClients}\n  </div>\n</div>`;\n\nlet allPages = coverHtml;\nfor (const item of allBuild) {\n  allPages += item.json.pageHtml;\n}\n\nlet tldrInput = '';\nfor (const item of allBuild) {\n  tldrInput += `CLIENT: ${item.json.clientName} (${item.json.industry})\\nSUMMARY: ${item.json.execText}\\nHEADLINES: ${item.json.headlines}\\nARTICLES FOUND: ${item.json.articleCount}\\n\\n`;\n}\n\nconst css = `\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');\n* { margin: 0; padding: 0; box-sizing: border-box; }\nbody { font-family: Inter, Arial, sans-serif; color: #1a1a1a; font-size: 11px; line-height: 1.5; }\n\n/* Cover page */\n.cover-page { width: 210mm; height: 297mm; background: #0f172a; padding: 60px 40px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; page-break-after: always; text-align: center; }\n.cover-top { width: 100%; }\n.cover-brand { color: #64748b; font-size: 11px; letter-spacing: 4px; font-weight: 600; }\n.cover-center { display: flex; flex-direction: column; align-items: center; }\n.cover-accent { width: 60px; height: 3px; background: #64748b; margin: 20px 0; }\n.cover-title { color: #f1f5f9; font-size: 48px; font-weight: 700; line-height: 1.1; }\n.cover-subtitle { color: #64748b; font-size: 48px; font-weight: 300; margin-bottom: 8px; }\n.cover-date { color: #64748b; font-size: 14px; margin-top: 24px; letter-spacing: 1px; }\n.cover-bottom { width: 100%; max-width: 280px; }\n.cover-label { color: #64748b; font-size: 9px; letter-spacing: 2px; margin-bottom: 16px; text-transform: uppercase; }\n.cover-client { color: #cbd5e1; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1e293b; text-align: left; }\n.cover-client:last-child { border-bottom: none; }\n.cover-num { color: #64748b; margin-right: 12px; font-weight: 600; }\n\n/* Client pages */\n.client-page { width: 210mm; min-height: 297mm; padding: 24px 32px; page-break-after: always; position: relative; }\n.header { border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; }\n.header-left { flex: 1; }\n.header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }\n.brand { font-size: 8px; color: #666; letter-spacing: 2px; }\n.client-name { font-size: 20px; font-weight: 700; }\n.date { font-size: 9px; color: #666; }\n.industry-tag { font-size: 8px; background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 3px; display: inline-block; }\n.exec-summary { background: #f8fafc; border-left: 3px solid #1e40af; padding: 14px 16px; margin-bottom: 24px; }\n.exec-summary p { margin: 0; text-align: justify; line-height: 1.6; }\nh2 { font-size: 10px; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }\nh2:first-of-type { margin-top: 0; }\nh3 { font-size: 11px; font-weight: 600; margin-bottom: 6px; }\n.development { margin-bottom: 16px; padding-left: 16px; border-left: 2px solid #e2e8f0; }\n.development p, .content p { margin: 0 0 8px; text-align: justify; line-height: 1.55; }\na { color: #4f46e5; text-decoration: none; }\n.footer { position: absolute; bottom: 16px; left: 32px; right: 32px; font-size: 7px; color: #999; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px; }\n`;\n\nconst fullHtml = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>${css}</style>\n</head>\n<body>\n${allPages}\n</body>\n</html>`;\n\nreturn [{\n  json: {\n    combinedHtml: fullHtml,\n    fileName: 'astris-weekly-intelligence-' + shortDate + '.pdf',\n    slackChannel: allBuild[0].json.slackChannel,\n    tldrInput: tldrInput,\n    clientNames: clientList.join(', '),\n    dateStr: dateStr,\n    shortDate: shortDate\n  }\n}];"
+      },
+      "id": "b473393c-241b-4fcb-85a5-986e0970cb02",
+      "name": "Combine All Pages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        4624
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You write ultra-concise intelligence digests. Each bullet is ONE specific fact. No adjectives. No filler. No commentary.",
+              "role": "system"
+            },
+            {
+              "content": "=Write exactly 2 bullet points per client. Each bullet: 8-12 words MAX. One fact. No context, no explanation.\n\n{{ $json.tldrInput }}\n\nFORMAT:\n\nWISDOM\n• [Fact with company name, number, or date]\n• [Different fact]\n\nINFERA HEALTH\n• [Fact]\n• [Fact]\n\n[Continue for ALL clients]\n\nRULES:\n- Exactly 2 bullets per client\n- 8-12 words per bullet MAX\n- Start each bullet with WHO or WHAT (company/entity name)\n- If no articles: \"• No relevant news this week.\"\n- Plain text only. No markdown."
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.1
+        }
+      },
+      "id": "d709df79-1f49-4168-8081-22c65030f56b",
+      "name": "GPT TL;DR",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -4432,
+        4480
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "s0fnJd1R7a3csqeJ",
+          "name": "Sai-GPT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// =============================================================================\n// BUILD SLACK MESSAGE - v13\n// =============================================================================\n\nconst combineData = $('Combine All Pages').item.json;\nconst tldrRaw = $input.item.json;\n\nlet tldr = '';\nif (typeof tldrRaw === 'string') {\n  tldr = tldrRaw;\n} else if (tldrRaw.message && tldrRaw.message.content) {\n  tldr = tldrRaw.message.content;\n} else if (tldrRaw.text) {\n  tldr = tldrRaw.text;\n} else if (tldrRaw.output) {\n  tldr = tldrRaw.output;\n} else if (tldrRaw.content) {\n  tldr = tldrRaw.content;\n}\n\nif (!tldr) {\n  tldr = 'Weekly summary unavailable. Check the workflow for errors.';\n}\n\ntldr = tldr.replace(/^([A-Z][A-Z\\s&\\/\\-]+)$/gm, function(match) {\n  return '\\n*' + match.trim() + '*';\n}).trim();\n\nconst slackMessage = `:bar_chart:  *Weekly Intelligence Report*  |  _${combineData.dateStr}_\\n\\n${tldr}\\n\\n:page_facing_up: _Full PDF report uploading shortly..._`;\n\nreturn {\n  json: {\n    slackChannel: combineData.slackChannel,\n    slackMessage: slackMessage,\n    combinedHtml: combineData.combinedHtml,\n    fileName: combineData.fileName,\n    dateStr: combineData.dateStr\n  }\n};"
+      },
+      "id": "d4c7413a-310e-423f-be14-fcda79a80ba9",
+      "name": "Build Slack Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4144,
+        4480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer SLACK_BOT_TOKEN_XXX"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  channel: $json.slackChannel,\n  text: $json.slackMessage,\n  unfurl_links: false,\n  unfurl_media: false\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "07e57104-1fe7-4361-91a2-2362031b4fee",
+      "name": "Post Slack Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3936,
+        4480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.html2pdf.app/v1/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  html: $('Combine All Pages').item.json.combinedHtml,\n  apiKey: 'HTML2PDF_API_KEY_XXX',\n  format: 'A4',\n  margin: { top: 0, right: 0, bottom: 0, left: 0 }\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "71025fbd-76f7-48f1-917e-d261296c16e6",
+      "name": "Convert to PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4432,
+        4768
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "options": {
+          "channelId": "C0ADHLAPBPD"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -4224,
+        4768
+      ],
+      "id": "c87fd246-8fe0-4f3c-9836-c6e9307583b1",
+      "name": "Upload a file",
+      "webhookId": "3432b35b-40eb-4571-b14a-18808a372813",
+      "credentials": {
+        "slackApi": {
+          "id": "G9fAdgV1fX7GcUjO",
+          "name": "News-Bot-Slack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// =============================================================================\n// INDIVIDUAL CLIENT HTML - v13\n// Wraps single client page with full HTML + CSS for standalone PDF\n// =============================================================================\n\nconst item = $input.item.json;\nconst now = new Date();\nconst shortDate = now.toISOString().split('T')[0];\n\nconst css = `\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');\n* { margin: 0; padding: 0; box-sizing: border-box; }\nbody { font-family: Inter, Arial, sans-serif; color: #1a1a1a; font-size: 11px; line-height: 1.5; }\n.client-page { width: 210mm; min-height: 297mm; padding: 24px 32px; position: relative; }\n.header { border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; }\n.header-left { flex: 1; }\n.header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }\n.brand { font-size: 8px; color: #666; letter-spacing: 2px; }\n.client-name { font-size: 20px; font-weight: 700; }\n.date { font-size: 9px; color: #666; }\n.industry-tag { font-size: 8px; background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 3px; display: inline-block; }\n.exec-summary { background: #f8fafc; border-left: 3px solid #1e40af; padding: 14px 16px; margin-bottom: 24px; }\n.exec-summary p { margin: 0; text-align: justify; line-height: 1.6; }\nh2 { font-size: 10px; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }\nh2:first-of-type { margin-top: 0; }\nh3 { font-size: 11px; font-weight: 600; margin-bottom: 6px; }\n.development { margin-bottom: 16px; padding-left: 16px; border-left: 2px solid #e2e8f0; }\n.development p, .content p { margin: 0 0 8px; text-align: justify; line-height: 1.55; }\na { color: #4f46e5; text-decoration: none; }\n.footer { position: absolute; bottom: 16px; left: 32px; right: 32px; font-size: 7px; color: #999; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px; }\n`;\n\nconst fullHtml = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>${css}</style>\n</head>\n<body>\n${item.pageHtml}\n</body>\n</html>`;\n\nconst safeClientName = item.clientName.toLowerCase().replace(/[^a-z0-9]/g, '-');\n\nreturn {\n  json: {\n    clientName: item.clientName,\n    slackChannel: item.slackChannel,\n    individualHtml: fullHtml,\n    fileName: `${safeClientName}-briefing-${shortDate}.pdf`\n  }\n};"
+      },
+      "id": "95891cb8-acfb-407d-bd70-e937ea0138ed",
+      "name": "Individual Client HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        4976
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "94c3798b-a476-4c14-b44d-258d17493e97",
+      "name": "Loop Clients",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4432,
+        4976
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.html2pdf.app/v1/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  html: $json.individualHtml,\n  apiKey: 'HTML2PDF_API_KEY_XXX',\n  format: 'A4',\n  margin: { top: 0, right: 0, bottom: 0, left: 0 }\n}) }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "ce10cd60-17e6-4ac9-bd8f-689b026b4c5f",
+      "name": "Convert Individual PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4176,
+        4976
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "options": {
+          "channelId": "C0ADHLAPBPD"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -3920,
+        4976
+      ],
+      "id": "e1365ed1-ad1a-4e9e-be60-733a0ddd9d1f",
+      "name": "Upload Individual PDF",
+      "webhookId": "individual-pdf-upload",
+      "credentials": {
+        "slackApi": {
+          "id": "G9fAdgV1fX7GcUjO",
+          "name": "News-Bot-Slack"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every Monday 8am": {
+      "main": [
+        [
+          {
+            "node": "Client Configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Configs": {
+      "main": [
+        [
+          {
+            "node": "Split Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Queries": {
+      "main": [
+        [
+          {
+            "node": "Exa News Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exa News Search": {
+      "main": [
+        [
+          {
+            "node": "Merge & Dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge & Dedupe": {
+      "main": [
+        [
+          {
+            "node": "GPT-4o Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4o Briefing": {
+      "main": [
+        [
+          {
+            "node": "Build Client Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Client Output": {
+      "main": [
+        [
+          {
+            "node": "Combine All Pages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Individual Client HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All Pages": {
+      "main": [
+        [
+          {
+            "node": "GPT TL;DR",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT TL;DR": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Message": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to PDF": {
+      "main": [
+        []
+      ]
+    },
+    "Individual Client HTML": {
+      "main": [
+        [
+          {
+            "node": "Loop Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Clients": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Convert Individual PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Individual PDF": {
+      "main": [
+        [
+          {
+            "node": "Upload Individual PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Individual PDF": {
+      "main": [
+        [
+          {
+            "node": "Loop Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a335ae8e-62a1-4261-9539-d37f49b67375",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1ca1e7160dcf50a8252e9741bcd4c2af15359ba3383e44aa8c952dc4d05dd185"
+  },
+  "id": "9Be8hptz23DE4cHr4_wf1",
+  "tags": []
+}
