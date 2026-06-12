@@ -105,7 +105,7 @@
         "options": {}
       },
       "credentials": {
-        "postgres": { "id": "REPLACE_WITH_POSTGRES_CREDENTIAL_ID", "name": "State DB (Postgres)" }
+        "postgres": { "id": "REPLACE_WITH_POSTGRES_CREDENTIAL_ID", "name": "Supabase (state DB)" }
       }
     },
     {
@@ -135,7 +135,7 @@
         }
       },
       "credentials": {
-        "postgres": { "id": "REPLACE_WITH_POSTGRES_CREDENTIAL_ID", "name": "State DB (Postgres)" }
+        "postgres": { "id": "REPLACE_WITH_POSTGRES_CREDENTIAL_ID", "name": "Supabase (state DB)" }
       }
     },
     {

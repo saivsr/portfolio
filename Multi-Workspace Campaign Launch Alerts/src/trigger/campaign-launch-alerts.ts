@@ -26,6 +26,7 @@ function requireEnv(name: string): string {
 }
 
 // Module-level singletons (reused across runs).
+// DATABASE_URL points at Supabase (managed Postgres) in production.
 const pool = new Pool({ connectionString: requireEnv("DATABASE_URL") });
 const slack = new WebClient(requireEnv("SLACK_BOT_TOKEN"));
 

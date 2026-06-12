@@ -76,7 +76,7 @@ to read without opening an n8n canvas.
 3. **Normalize** — flatten, de-dupe by id, and resolve each campaign's
    `workspace_id` to a human workspace name.
 4. **Read state** — pull every `campaign_id` we've already announced from
-   Postgres (`automation.pv_launch_state`).
+   Supabase Postgres (`automation.pv_launch_state`).
 5. **Diff** — `new = active − seen`.
 6. **Record (race-proof)** — `INSERT ... ON CONFLICT DO NOTHING RETURNING`, so we
    only treat as "new" the rows this run actually created.
@@ -88,7 +88,7 @@ to read without opening an n8n canvas.
 
 ## Engineering decisions & tradeoffs
 
-**Durable dedupe in Postgres, not in-memory.** The killed predecessor lost its
+**Durable dedupe in Postgres (Supabase), not in-memory.** The killed predecessor lost its
 "already sent" set between runs and replayed the backlog. Here, a recorded
 `campaign_id` is persisted forever, so an already-live campaign is *never*
 re-announced. `SELECT`ing a few hundred ids per run is trivially cheap.
@@ -164,7 +164,8 @@ Launched: 2026-06-08 14:19 UTC
 
 - **TypeScript** on **Trigger.dev v3** (`schedules.task`) for the standalone version
 - **n8n** for the production workflow (Schedule → HTTP → Code → Postgres → Slack)
-- **PostgreSQL** for durable dedupe state
+- **Supabase** (managed PostgreSQL) for durable dedupe state — the table lives in
+  its own `automation` schema, isolated from product tables
 - **PlusVibe API** (cold-email platform) as the source of truth
 - **Slack Web API** (`chat.postMessage`) for delivery
 
