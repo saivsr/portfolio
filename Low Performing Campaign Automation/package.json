@@ -1,0 +1,15 @@
+{
+  "name": "low-performing-campaign-automation",
+  "version": "1.0.0",
+  "description": "Auto-pause underperforming email campaigns across client workspaces",
+  "scripts": {
+    "dev": "npx trigger.dev@latest dev",
+    "deploy": "npx trigger.dev@latest deploy"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "^4.4.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
