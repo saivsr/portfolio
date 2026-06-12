@@ -1,0 +1,24 @@
+# --- secrets ---
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+
+# --- FDA data (never committed: large + not the point of this repo) ---
+device-510k-*.json
+*.csv
+master_510k_companies.csv
+fda_510k_*.csv
+
+# --- python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- os / editor ---
+.DS_Store
+.idea/
+.vscode/
