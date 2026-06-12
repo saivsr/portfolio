@@ -1,0 +1,20 @@
+# Secrets / env
+.env
+.env.*
+*.local
+secrets.json
+
+# Apps Script local (clasp) credentials
+.clasprc.json
+.clasp.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build / deps
+node_modules/
+dist/
+build/
