@@ -21,7 +21,6 @@ The folders below are production automation and data-extraction tools — scrapi
 | [Production Weekly PDF Pipeline](./Production%20Weekly%20PDF%20Pipeline) | Generates a weekly PDF report from production data. | Python |
 | [Slack Availability Checker](./Slack%20Availability%20Checker) | Checks and reports team availability via Slack. | Python · Slack |
 
-> If a project link 404s, the folder name just differs slightly — fix the path in the link (spaces become `%20`).
 
 ## Writing
 
