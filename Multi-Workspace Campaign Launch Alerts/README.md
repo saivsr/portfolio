@@ -5,8 +5,8 @@ A scheduled job that watches **every client workspace** on a cold-email platform
 campaign goes live — across ~120 concurrently-active campaigns spread over 12
 workspaces, with **exactly-once** delivery and **zero backlog spam**.
 
-> **Sanitization note.** This is real production tooling I built at a B2B
-> sales-and-scheduling agency. All logic, control flow, API contracts, and the
+> **Sanitization note.** This is real production tooling I built at Astris
+> Partners. All logic, control flow, API contracts, and the
 > real 12-workspace / ~120-campaign scale are preserved. Confidential values are
 > stubbed: client/workspace names and IDs are fictional stand-ins, secrets are
 > `.env` placeholders, and platform credential IDs are redacted. The third-party

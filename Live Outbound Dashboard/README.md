@@ -11,7 +11,7 @@
 
 It replaced a hand-built PDF report that went stale the day it was sent — and reconciles to that trusted PDF within ±1–4 on every funnel metric.
 
-> **Sanitization note.** Real production tooling I built at a B2B sales & recruiting agency. All logic, control flow, API contracts, and real scale are preserved. Confidential values are stubbed: the client is the fictional **Summit Executive Partners (SEP)**; rep and candidate names are fictional stand-ins applied consistently; dollar figures are rounded/illustrative; secrets are `.env` placeholders; the Supabase project ref and PlusVibe workspace id are redacted to `*_XXX`. Third-party platforms (PlusVibe, Missive, HubSpot, Supabase, Slack) are shown as-is. Where a value was redacted, the file says so.
+> **Sanitization note.** Real production tooling I built at Astris Partners. All logic, control flow, API contracts, and real scale are preserved. Confidential values are stubbed: the client is the fictional **Summit Executive Partners (SEP)**; rep and candidate names are fictional stand-ins applied consistently; dollar figures are rounded/illustrative; secrets are `.env` placeholders; the Supabase project ref and PlusVibe workspace id are redacted to `*_XXX`. Third-party platforms (PlusVibe, Missive, HubSpot, Supabase, Slack) are shown as-is. Where a value was redacted, the file says so.
 
 ---
 

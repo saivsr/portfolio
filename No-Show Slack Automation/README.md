@@ -2,7 +2,7 @@
 
 A Google Apps Script that posts a real-time Slack alert the moment a booked call is marked **No show** on a client's call-tracking spreadsheet.
 
-This is **one script used as a repeatable process across multiple clients.** Each client at the agency has its own call-tracking ("scorecard") spreadsheet. The identical script is bound to each one, and only the `CONFIG` block changes per deployment — client name, sheet/column layout, and Slack webhook. The same ~70 lines run across the entire client roster (≈10 scorecards at time of writing) rather than being rebuilt per client. Onboarding a new client is: copy the script in, edit `CONFIG`, install the trigger.
+This is **one script used as a repeatable process across multiple clients.** Each client at Astris Partners has its own call-tracking ("scorecard") spreadsheet. The identical script is bound to each one, and only the `CONFIG` block changes per deployment — client name, sheet/column layout, and Slack webhook. The same ~70 lines run across the entire client roster (≈10 scorecards at time of writing) rather than being rebuilt per client. Onboarding a new client is: copy the script in, edit `CONFIG`, install the trigger.
 
 > **Sanitization note.** This is genuine production code. The real Slack webhook has been stubbed to `SLACK_WEBHOOK_URL_XXX`, and the client name has been genericised into the `CONFIG.CLIENT_NAME` value (`"<CLIENT_NAME>"`), which is set per deployment. All logic, control flow, column mapping, and the Slack message contract are unchanged from production.
 

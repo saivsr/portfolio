@@ -1,8 +1,8 @@
 # Production Weekly PDF → Structured Outbound Data Pipeline
 
-A six-prompt LLM extraction pipeline that converts a 35-page semi-structured trade-publication PDF into two clean outbound datasets: a **project-company CSV** (one row per project-company pair, with classified emails, parsed addresses, and country resolution) and a **producer-focused CSV** (one row per producer, with plausible person-email matching against company contact blocks). Built for weekly recurring extraction against new issues of the same publication.
+A six-prompt Claude / Claude Code extraction pipeline that converts a 35-page semi-structured trade-publication PDF into two clean outbound datasets: a **project-company CSV** (one row per project-company pair, with classified emails, parsed addresses, and country resolution) and a **producer-focused CSV** (one row per producer, with plausible person-email matching against company contact blocks). Built for weekly recurring extraction against new issues of the same publication.
 
-Built at a B2B outbound agency for prospecting in the film and television production industry.
+Built at Astris Partners for prospecting in the film and television production industry.
 
 ---
 
@@ -14,7 +14,7 @@ Production Weekly publishes a weekly PDF of in-progress and upcoming film and TV
 
 2. **Producer outbound** — one row per individual producer, with name splitting that survives middle initials and suffixes, and person-email matching that's structurally plausible but never guesswork.
 
-The technical bottleneck is mundane and consistent: a 35-page PDF doesn't fit in a single LLM extraction call. Single-pass attempts truncate mid-write when the model hits its output-token ceiling. The naive workaround — stream JSON literals across multiple tool calls — produces silent corruption when one call self-terminates mid-record.
+The technical bottleneck is mundane and consistent: a 35-page PDF doesn't fit in a single Claude extraction call. Single-pass attempts truncate mid-write when Claude hits its output-token ceiling. The naive workaround — stream JSON literals across multiple tool calls — produces silent corruption when one call self-terminates mid-record.
 
 ## Architecture
 
@@ -165,4 +165,4 @@ These are the lightweight downstream steps run after the CSVs are out, useful as
 
 ---
 
-> **Sanitization note.** No client names, API tokens, UUIDs, or real producer/company contact records are exposed by this repository. The prompts ship as-is — they contain no embedded credentials or proprietary data. The numerical output shapes above are representative of a single issue; specific issue contents and the agency that deployed this are not disclosed.
+> **Sanitization note.** No client names, API tokens, UUIDs, or real producer/company contact records are exposed by this repository. The prompts ship as-is — they contain no embedded credentials or proprietary data. The numerical output shapes above are representative of a single issue; specific issue contents are not disclosed. This pipeline was built and deployed at Astris Partners.

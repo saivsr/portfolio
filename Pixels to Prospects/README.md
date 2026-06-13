@@ -3,7 +3,7 @@
 An end-to-end pipeline that turns a conference **attendee directory locked inside
 an event app — with no export and no API** — into a clean, deduplicated CSV of
 structured leads. It does this by capturing each profile as a screenshot,
-OCR-ing them, triaging real profiles from UI junk, handing the messy OCR to an AI
+OCR-ing them, triaging real profiles from UI junk, handing the messy OCR to a Claude
 step for schema-locked normalization, and flattening the result to CSV.
 
 The name is the whole job in three words: on-screen profiles (pixels) come out the
@@ -228,7 +228,7 @@ Return only valid JSON.
 ## Tech stack
 
 Python · `pyautogui` (UI automation) · `tesseract` / `pytesseract` (OCR) ·
-`Pillow` (image stats) · schema-constrained LLM normalization · CSV output.
+`Pillow` (image stats) · schema-constrained Claude normalization · CSV output.
 
 ## Responsible use
 
