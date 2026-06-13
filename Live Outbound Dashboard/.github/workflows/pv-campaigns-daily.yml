@@ -1,0 +1,47 @@
+name: PV campaigns — daily
+
+on:
+  schedule:
+    # Every day at 22:00 UTC = midnight CEST (summer)
+    - cron: '0 22 * * *'
+  workflow_dispatch:   # allow manual runs from the Actions tab
+
+concurrency:
+  group: pv-campaigns-daily
+  cancel-in-progress: false
+
+jobs:
+  pull-and-upsert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run campaigns ETL
+        env:
+          PV_API_KEY: ${{ secrets.PV_API_KEY }}
+          SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python -m etl.pv_campaigns
+
+      # Failure fallback — Python posts success itself; this catches crashes that
+      # happen before Python's own slack_post() could fire.
+      - name: Slack — failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -sS -X POST -H 'Content-Type: application/json' \
+              --data "{\"text\":\":x: SEP dashboard — campaigns daily snapshot FAILED\\nRun date: $(date -u +%Y-%m-%d)\\n<https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|view logs>\"}" \
+              "$SLACK_WEBHOOK_URL"
+          fi
