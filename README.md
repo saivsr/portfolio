@@ -10,6 +10,7 @@ The folders below are production automation and data-extraction tools — scrapi
 
 | Project | What it does | Stack |
 |---|---|---|
+| [Anti-Slop Content Engine](./Anti-Slop%20Content%20Engine) | Operator-gated LLM pipeline that turns a brief into agency-grade B2B content and defends quality with a three-layer gate — deterministic slop checks → isolated-context critic subagent → external AI detectors. | Python · Claude Code · LLM subagents |
 | [Live Outbound Dashboard](./Live%20Outbound%20Dashboard) | Rebuilds a recruiting firm's cold-email funnel from four systems that disagree on every number into a daily, self-reconciling dashboard where every figure traces back to its source. | Python · Postgres · Next.js · GitHub Actions |
 | [Pixels to Prospects](./Pixels%20to%20Prospects) | Extracts a clean prospect list from an event app with no export and no API: capture → OCR triage → Claude normalization → dedup. | Python · Tesseract OCR · Claude |
 | [FDA 510(k) Scraper](./FDA%20510K%20Scraper) | Turns the FDA medical-device clearance database into structured, queryable data for health-tech targeting. | Python |
