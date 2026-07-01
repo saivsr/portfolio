@@ -21,6 +21,4 @@ Author page → https://gamerant.com/author/sai-vsr/
 - [SanDisk's New PS5 SSD Solves Your Storage Crisis](https://gamerant.com/sandisks-new-ps5-ssd/)
 
 ---
-Third-party press profile → https://intelligentrelations.com/journalist/sai-vsr/
 
-*Add or swap in your favourite pieces any time — just edit this file.*
